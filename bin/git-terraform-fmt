@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+set -E -e -o pipefail -u
+# ---
+#
+# MIT License
+#
+# Copyright (c) 2021 djeeno
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
+# ---
+#
+# # Install
+#
+# ### for curl
+# ```
+# $ FILENAME=git-terraform-fmt && sudo -E bash -cx "curl -LR https://github.com/djeeno/${FILENAME}/releases/latest/download/${FILENAME} -o /usr/local/bin/${FILENAME} && chmod -v +x /usr/local/bin/${FILENAME}"
+# ```
+#
+# ### for wget
+# ```
+# $ FILENAME=git-terraform-fmt && sudo -E bash -cx "wget -c https://github.com/djeeno/${FILENAME}/releases/latest/download/${FILENAME} -O /usr/local/bin/${FILENAME} && chmod -v +x /usr/local/bin/${FILENAME}"
+# ```
+
+__main () { (
+  # check
+  if [[ " $* " =~ .*\ (-h|--help)\ .* ]]; then
+    cat 1>&2 <<__USAGE__
+
+Usage:  git terraform-fmt [options] [terraform fmt options]
+
+git-terraform-fmt - terraform fmt to all *.tf files
+
+Options:
+      -h, --help           Display help
+
+__USAGE__
+    exit 1
+  fi
+  # main
+  git grep -E --name-only ".?" |
+    grep -E "\.tf$" |
+    xargs -I{} -t terraform fmt "$@" {}
+)}
+
+__main "$@"
