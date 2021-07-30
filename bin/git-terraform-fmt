@@ -56,7 +56,9 @@ __USAGE__
   # main
   git grep -E --name-only ".?" |
     grep -E "\.tf$" |
-    xargs -I{} -t terraform fmt "$@" {}
+    sed "s|/[^/]*\.tf$||" |
+    sort -u |
+    xargs -I{} terraform fmt "$@" {}
 )}
 
 __main "$@"
