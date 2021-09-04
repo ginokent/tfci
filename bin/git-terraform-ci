@@ -1,0 +1,92 @@
+#!/usr/bin/env bash
+set -E -e -o pipefail -u
+# ---
+#
+# MIT License
+#
+# Copyright (c) 2021 djeeno
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
+# ---
+#
+# # Install
+#
+# ### for curl
+# ```
+# $ FILENAME=git-terraform-ci && sudo -E bash -cx "curl -LR https://github.com/djeeno/${FILENAME}/releases/latest/download/${FILENAME} -o /usr/local/bin/${FILENAME} && chmod -v +x /usr/local/bin/${FILENAME}"
+# ```
+#
+# ### for wget
+# ```
+# $ FILENAME=git-terraform-ci && sudo -E bash -cx "wget -c https://github.com/djeeno/${FILENAME}/releases/latest/download/${FILENAME} -O /usr/local/bin/${FILENAME} && chmod -v +x /usr/local/bin/${FILENAME}"
+# ```
+
+# export for func
+[ "${LOG_COLOR:-}" = false ] || export enablecolor=true
+export  pipe_debug="awk \"{print \\\"${enablecolor:+\\\\033[0;34m}\$(date +%Y-%m-%dT%H:%M:%S%z) [ debug] \\\"\\\$0\\\"${enablecolor:+\\\\033[0m}\\\"}\" /dev/stdin"
+export   pipe_info="awk \"{print \\\"${enablecolor:+\\\\033[0;32m}\$(date +%Y-%m-%dT%H:%M:%S%z) [  info] \\\"\\\$0\\\"${enablecolor:+\\\\033[0m}\\\"}\" /dev/stdin"
+export pipe_notice="awk \"{print \\\"${enablecolor:+\\\\033[0;36m}\$(date +%Y-%m-%dT%H:%M:%S%z) [notice] \\\"\\\$0\\\"${enablecolor:+\\\\033[0m}\\\"}\" /dev/stdin"
+export   pipe_warn="awk \"{print \\\"${enablecolor:+\\\\033[0;33m}\$(date +%Y-%m-%dT%H:%M:%S%z) [  warn] \\\"\\\$0\\\"${enablecolor:+\\\\033[0m}\\\"}\" /dev/stdin"
+export  pipe_error="awk \"{print \\\"${enablecolor:+\\\\033[0;31m}\$(date +%Y-%m-%dT%H:%M:%S%z) [ error] \\\"\\\$0\\\"${enablecolor:+\\\\033[0m}\\\"}\" /dev/stdin"
+export   pipe_crit="awk \"{print \\\"${enablecolor:+\\\\033[1;31m}\$(date +%Y-%m-%dT%H:%M:%S%z) [  crit] \\\"\\\$0\\\"${enablecolor:+\\\\033[0m}\\\"}\" /dev/stdin"
+
+# func
+export severity="${LOG_SEVERITY:--1}"
+Debugln  () { [ "${severity:--1}" -gt 100 ] 2>/dev/null || echo "$*" | bash -c "${pipe_debug:?}"  1>&2; }
+Infoln   () { [ "${severity:--1}" -gt 200 ] 2>/dev/null || echo "$*" | bash -c "${pipe_info:?}"   1>&2; }
+Noticeln () { [ "${severity:--1}" -gt 300 ] 2>/dev/null || echo "$*" | bash -c "${pipe_notice:?}" 1>&2; }
+Warnln   () { [ "${severity:--1}" -gt 400 ] 2>/dev/null || echo "$*" | bash -c "${pipe_warn:?}"   1>&2; }
+Errorln  () { [ "${severity:--1}" -gt 500 ] 2>/dev/null || echo "$*" | bash -c "${pipe_error:?}"  1>&2; }
+Critln   () { [ "${severity:--1}" -gt 600 ] 2>/dev/null || echo "$*" | bash -c "${pipe_crit:?}"   1>&2; }
+Run      () { Infoln "$ $(s=" "; i=1; for a in "$@"; do if [ $i = $# ]; then s=""; fi; if echo "$a" | grep -Eq "[[:blank:]]"; then printf "'%s'$s" "$a"; else printf "%s$s" "$a"; fi; done;)"; "$@"; }
+Trap     () { trap -- "${1:?};$(trap -p "${2:?}" | sed "s/trap -- '\(.*\)' ${2:?}/\1/; s/'\\\''/'/g")" "${2:?}"; }
+Catch    () { err=$?; Errorln "exit ${err-}"; return ${err-}; }
+
+__main__ () { (
+  # check
+  if [[ " $* " =~ .*\ (-h|--help)\ .* ]] || [[ $# -eq 0 ]]; then
+    cat 1>&2 <<__USAGE__
+
+Usage:  git terraform-ci dir1 dir2 ...
+
+git-terraform-ci - terraform fmt to all *.tf files
+
+Options:
+      -h, --help           Display help
+
+__USAGE__
+    return 1
+  fi
+  # main
+  for dir in "$@"; do
+    (
+      if ! ls -- "${dir}"/*.tf >/dev/null 2>&1; then
+        Errorln "There are no tf files to evaluate in directory: ${dir:?}"
+        return 1
+      fi
+      cd "${dir:?}" &&
+        terraform fmt &&
+        if terraform validate 2>&1 | grep -q 'Please run \"terraform init\".'; then terraform init; fi &&
+        terraform validate
+    )
+  done
+)}
+
+__main__ "$@"
