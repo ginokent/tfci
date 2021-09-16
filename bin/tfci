@@ -77,7 +77,7 @@ __USAGE__
   # main
   for dir in "$@"; do
     (
-      if ! ls -- "${dir}"/*.tf >/dev/null 2>&1; then
+      if ! ls -- "${dir:?}"/*.tf >/dev/null 2>&1; then
         Errorln "There are no tf files to evaluate in directory: ${dir:?}"
         return 1
       fi
