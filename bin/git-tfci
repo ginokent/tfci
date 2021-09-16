@@ -66,7 +66,7 @@ __main__ () { (
 
 Usage:  git tfci dir1 dir2 ...
 
-git-tfci - terraform fmt to all *.tf files
+git-tfci - cd each directories and run \`terraform fmt && terraform validate\`
 
 Options:
       -h, --help           Display help
