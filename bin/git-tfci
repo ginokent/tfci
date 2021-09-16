@@ -82,9 +82,10 @@ __USAGE__
         return 1
       fi
       cd "${dir:?}" &&
-        terraform fmt &&
+        Run pwd -P &&
+        Run terraform fmt &&
         if terraform validate 2>&1 | grep -q 'Please run \"terraform init\".'; then terraform init; fi &&
-        terraform validate
+        Run terraform validate
     )
   done
 )}
