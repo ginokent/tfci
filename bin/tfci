@@ -64,25 +64,49 @@ __main__ () { (
   if [[ " $* " =~ .*\ (-h|--help)\ .* ]] || [[ $# -eq 0 ]]; then
     cat 1>&2 <<__USAGE__
 
-Usage:  tfci dir1 dir2 ...
+Usage:  tfci [options] dir1 dir2 ...
 
-tfci - cd each directories and run \`terraform fmt && terraform validate\`
+tfci - \`cd\` each directories and run \`terraform fmt && terraform validate\`
 
 Options:
       -h, --help           Display help
+      --check              If enabled, run \`terraform fmt\` with the \`-check\` option.
 
 __USAGE__
     return 1
   fi
+  # options
+  declare -a ARGS=()
+  declare -a FMT_OPTS=()
+  HYPHENHYPHEN=false
+  for arg in "$@"; do
+    if [[ "${HYPHENHYPHEN:?}" != true ]] && [[ "${arg}" = "--" ]]; then
+      HYPHENHYPHEN=true
+      continue
+    fi
+    if [[ "${HYPHENHYPHEN:?}" != true ]] && [[ " ${arg:?} " =~ .*\ (-check|--check)\ .* ]]; then
+      FMT_OPTS=("${FMT_OPTS[@]}" -check)
+      shift
+      continue
+    fi
+    ARGS=("${ARGS[@]}" "${arg:?}")
+  done
+  # check
+  for dir in "${ARGS[@]}"; do
+    if [[ ! -d "${dir:?}" ]]; then
+      Errorln "argument is not directory: ${dir:?}"
+      return 1
+    fi
+    if ! ls -- "${dir:?}"/*.tf >/dev/null 2>&1; then
+      Errorln "There are no tf files to evaluate in directory: ${dir:?}"
+      return 1
+    fi
+  done
   # main
-  for dir in "$@"; do
+  for dir in "${ARGS[@]}"; do
     (
-      if ! ls -- "${dir:?}"/*.tf >/dev/null 2>&1; then
-        Errorln "There are no tf files to evaluate in directory: ${dir:?}"
-        return 1
-      fi
       Run cd "${dir:?}" &&
-        Run terraform fmt &&
+        Run terraform fmt "${FMT_OPTS[@]}" &&
         if bash -c "terraform validate 2>&1 | grep -q \"Please run .terraform init.\.\""; then terraform init; fi &&
         Run terraform validate
     )
