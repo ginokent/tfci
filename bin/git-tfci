@@ -30,12 +30,12 @@ set -E -e -o pipefail -u
 #
 # ### for curl
 # ```
-# $ FILENAME=git-terraform-ci && sudo -E bash -cx "curl -LR https://github.com/djeeno/${FILENAME}/releases/latest/download/${FILENAME} -o /usr/local/bin/${FILENAME} && chmod -v +x /usr/local/bin/${FILENAME}"
+# $ FILENAME=git-tfci && sudo -E bash -cx "curl -LR https://github.com/djeeno/${FILENAME}/releases/latest/download/${FILENAME} -o /usr/local/bin/${FILENAME} && chmod -v +x /usr/local/bin/${FILENAME}"
 # ```
 #
 # ### for wget
 # ```
-# $ FILENAME=git-terraform-ci && sudo -E bash -cx "wget -c https://github.com/djeeno/${FILENAME}/releases/latest/download/${FILENAME} -O /usr/local/bin/${FILENAME} && chmod -v +x /usr/local/bin/${FILENAME}"
+# $ FILENAME=git-tfci && sudo -E bash -cx "wget -c https://github.com/djeeno/${FILENAME}/releases/latest/download/${FILENAME} -O /usr/local/bin/${FILENAME} && chmod -v +x /usr/local/bin/${FILENAME}"
 # ```
 
 # export for func
@@ -64,9 +64,9 @@ __main__ () { (
   if [[ " $* " =~ .*\ (-h|--help)\ .* ]] || [[ $# -eq 0 ]]; then
     cat 1>&2 <<__USAGE__
 
-Usage:  git terraform-ci dir1 dir2 ...
+Usage:  git tfci dir1 dir2 ...
 
-git-terraform-ci - terraform fmt to all *.tf files
+git-tfci - terraform fmt to all *.tf files
 
 Options:
       -h, --help           Display help
