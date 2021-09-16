@@ -4,7 +4,7 @@ set -E -e -o pipefail -u
 #
 # MIT License
 #
-# Copyright (c) 2021 djeeno
+# Copyright (c) 2021 newtstat
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -30,12 +30,12 @@ set -E -e -o pipefail -u
 #
 # ### for curl
 # ```
-# $ FILENAME=tfci && sudo -E bash -cx "curl -LR https://github.com/djeeno/${FILENAME}/releases/latest/download/${FILENAME} -o /usr/local/bin/${FILENAME} && chmod -v +x /usr/local/bin/${FILENAME}"
+# $ FILENAME=tfci && sudo -E bash -cx "curl -LR https://github.com/newtstat/${FILENAME}/releases/latest/download/${FILENAME} -o /usr/local/bin/${FILENAME} && chmod -v +x /usr/local/bin/${FILENAME}"
 # ```
 #
 # ### for wget
 # ```
-# $ FILENAME=tfci && sudo -E bash -cx "wget -c https://github.com/djeeno/${FILENAME}/releases/latest/download/${FILENAME} -O /usr/local/bin/${FILENAME} && chmod -v +x /usr/local/bin/${FILENAME}"
+# $ FILENAME=tfci && sudo -E bash -cx "wget -c https://github.com/newtstat/${FILENAME}/releases/latest/download/${FILENAME} -O /usr/local/bin/${FILENAME} && chmod -v +x /usr/local/bin/${FILENAME}"
 # ```
 
 # export for func
