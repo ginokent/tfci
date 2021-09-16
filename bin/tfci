@@ -80,19 +80,27 @@ __USAGE__
   declare -a FMT_OPTS=()
   HYPHENHYPHEN=false
   for arg in "$@"; do
-    if [[ "${HYPHENHYPHEN:?}" != true ]] && [[ "${arg}" = "--" ]]; then
+    if [[ "${HYPHENHYPHEN:?}" != true ]] && [[ "${arg-}" = "--" ]]; then
       HYPHENHYPHEN=true
       continue
     fi
-    if [[ "${HYPHENHYPHEN:?}" != true ]] && [[ " ${arg:?} " =~ .*\ (-check|--check)\ .* ]]; then
+    if [[ "${HYPHENHYPHEN:?}" != true ]] && [[ " ${arg-} " =~ .*\ (-check|--check)\ .* ]]; then
       FMT_OPTS=("${FMT_OPTS[@]}" -check)
       shift
       continue
     fi
-    ARGS=("${ARGS[@]}" "${arg:?}")
+    ARGS=("${ARGS[@]}" "${arg-}")
   done
   # check
+  if [[ "${#ARGS[@]}" -le 0 ]]; then
+    Errorln "argument is required"
+    return 1
+  fi
   for dir in "${ARGS[@]}"; do
+    if [[ "${dir-}" = "" ]]; then
+      Errorln "argument is empty string"
+      return 1
+    fi
     if [[ ! -d "${dir:?}" ]]; then
       Errorln "argument is not directory: ${dir:?}"
       return 1
