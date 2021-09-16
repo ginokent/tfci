@@ -81,8 +81,7 @@ __USAGE__
         Errorln "There are no tf files to evaluate in directory: ${dir:?}"
         return 1
       fi
-      cd "${dir:?}" &&
-        Run pwd -P &&
+      Run cd "${dir:?}" &&
         Run terraform fmt &&
         if terraform validate 2>&1 | grep -q 'Please run \"terraform init\".'; then terraform init; fi &&
         Run terraform validate
